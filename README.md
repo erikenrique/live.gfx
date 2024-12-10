@@ -1,13 +1,4 @@
-## Installation
+## Welcome to intouch
 
-1. Clone repo
-2. run `npm install`
-
-## Usage
-
-1. run `node server.js`
-2. Navigate to `localhost:8080`
-
-## Credit
-
-Modified from Scotch.io's auth tutorial
+More coming soon. 
+WIP visible [here](https://live-gfx.onrender.com).
