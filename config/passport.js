@@ -120,25 +120,25 @@ module.exports = function (passport) {
     // JWT STRATEGY ============================================================
     // =========================================================================
     // Using the JWT strategy for API authentication
-    // passport.use(
-    //     new JwtStrategy(
-    //         {
-    //             jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(), // Extract token from Authorization header
-    //             secretOrKey: process.env.JWT_SECRET, // JWT secret from .env
-    //         },
-    //         async (jwtPayload, done) => {
-    //             try {
-    //                 // Find the user specified in the token
-    //                 const user = await User.findById(jwtPayload.id);
-    //                 if (user) {
-    //                     return done(null, user);
-    //                 } else {
-    //                     return done(null, false); // No user found
-    //                 }
-    //             } catch (err) {
-    //                 return done(err, false);
-    //             }
-    //         }
-    //     )
-    // );
+    passport.use(
+        new JwtStrategy(
+            {
+                jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(), // Extract token from Authorization header
+                secretOrKey: process.env.JWT_SECRET, // JWT secret from .env
+            },
+            async (jwtPayload, done) => {
+                try {
+                    // Find the user specified in the token
+                    const user = await User.findById(jwtPayload.id);
+                    if (user) {
+                        return done(null, user);
+                    } else {
+                        return done(null, false); // No user found
+                    }
+                } catch (err) {
+                    return done(err, false);
+                }
+            }
+        )
+    );
 };
