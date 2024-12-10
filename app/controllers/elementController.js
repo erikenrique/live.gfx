@@ -40,8 +40,6 @@ exports.createElement = async (req, res) => {
     }
 };
 
-
-
 exports.getElement = async (req, res) => {
     try {
         const { id } = req.params;
