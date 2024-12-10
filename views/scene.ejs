@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= scene.name %> - Scene</title>
+    <link href="/css/output.css" rel="stylesheet">
+    <script defer src="/main.js"></script>
+</head>
+<body class="bg-maroon-900 text-white">
+    <% include partials/header %>
+
+    <div class="container mx-auto p-6">
+        <div class="flex justify-between items-center mb-4">
+            <a href="/admin/project/<%= scene.projectId %>" class="text-gray-400">
+                &larr; <%= project.name %>
+            </a>
+            <h1
+                id="sceneName"
+                class="text-3xl font-bold hover:underline"
+                contenteditable="true"
+                data-scene-id="<%= scene._id %>"
+                data-project-id="<%= project._id %>"
+            >
+                <%= scene.name %>
+            </h1>
+        </div>
+
+        <div class="bg-maroon-700 p-4 rounded shadow-md">
+            <div class="grid grid-cols-1 gap-4">
+                <div class="flex justify-between items-center">
+                    <span>Control Room</span>
+                    <a
+                        href="http://10.0.0.165:5000/control/<%= scene._id %>"
+                        class="btn btn-outline"
+                    >
+                        Open
+                    </a>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span>Preview</span>
+                    <a
+                        href="http://10.0.0.165:5000/preview/<%= scene._id %>"
+                        class="btn btn-outline"
+                    >
+                        Open
+                    </a>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span>Output</span>
+                    <a
+                        href="http://10.0.0.165:5000/output/<%= scene._id %>"
+                        class="btn btn-outline"
+                    >
+                        Open
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,205 @@
+.hidden {
+    display: none;
+}
+
+
+body.control-room {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Prevent vertical scrolling by default */
+}
+
+.control-room-container {
+    display: flex;
+    height: 100%;
+    width: 100%;
+}
+
+.control-panel {
+    background: #1e1e1e;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+.control-room-nav {
+    background: #2c2c2c;
+    color: white;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    flex-shrink: 0;
+}
+
+.control-room-nav .logo {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.control-room-nav .nav-links {
+    display: flex;
+    gap: 20px;
+}
+
+.control-room-nav .nav-link {
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+}
+
+.control-room-nav .nav-link.active {
+    font-weight: bold;
+    text-decoration: underline;
+}
+
+.panel-header {
+    height: 48px; /* Adjusted for a consistent height */
+    padding: 0 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #1f2937; /* Dark gray background */
+    border-bottom: 1px solid #374151; /* Border for separation */
+    flex-shrink: 0;
+}
+
+.panel-header h1 {
+    flex-grow: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 1.125rem;
+}
+
+.panel-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.elements-list {
+    padding: 1rem;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.element {
+    background: #2c2c2c;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.5rem;
+    border-radius: 0.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: background-color 0.3s ease;
+}
+
+.element:hover {
+    background: #3a3a3a;
+}
+
+.preview-window {
+    flex: 1; /* Take up 50% of the width */
+    background: limegreen;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+.preview-frame {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+.side-panel {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    z-index: 20;
+    background: #2c2c2c;
+    color: white;
+    box-shadow: -3px 0 5px rgba(0, 0, 0, 0.5);
+    transform: translateX(100%); /* Start hidden offscreen */
+    transition: transform 0.3s ease, min-width 0.3s ease, max-width 0.3s ease;
+    overflow-y: auto;
+    flex-direction: column;
+    display: flex;
+    min-width: 0rem;
+    max-width: 0rem;
+}
+
+.side-panel.visible {
+    transform: translateX(0); /* Slide into view */
+    min-width: 20rem;
+    max-width: 20rem;
+}
+
+.side-panel header {
+    padding: 1rem;
+    background: #1f2937;
+    border-bottom: 1px solid #374151;
+    font-weight: bold;
+    text-align: center;
+}
+
+.side-panel main {
+    flex: 1;
+    padding: 1rem;
+    overflow-y: auto;
+}
+
+.side-panel footer {
+    padding: 1rem;
+    background: #1f2937;
+    border-top: 1px solid #374151;
+}
+
+button {
+    cursor: pointer;
+}
+
+.cue-btn {
+    border: 2px solid gray;
+    background-color: gray;
+    transition: all 0.3s ease;
+    min-height: 48px;
+}
+
+.cue-btn.preview-on {
+    border-color: red;
+    border-style: dashed;
+    background: gray;
+}
+
+.cue-btn.on {
+    border-color: red;
+    background: red;
+    border-style: solid;
+}
+
+.cue-btn.preview-off {
+    border-color: black;
+    border-style: dashed;
+    background: red;
+}
+
+
+.toggle-btn {
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    background: #3a3a3a;
+    color: white;
+    transition: background-color 0.3s ease;
+}
+
+.toggle-btn:hover {
+    background: #5a5a5a;
+}

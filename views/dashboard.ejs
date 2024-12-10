@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link href="/css/output.css" rel="stylesheet">
+</head>
+<body class="bg-maroon-900 text-white">
+    <% include partials/header %>
+
+    <div class="container mx-auto p-6">
+        <h1 class="text-3xl font-bold mb-4">Dashboard</h1>
+        <div class="bg-maroon-700 p-4 rounded shadow-md">
+            <h2 class="text-xl font-semibold">Projects</h2>
+            <div class="p-4 bg-maroon-800 rounded mt-2">
+                <% if (projects && projects.length > 0) { %>
+                    <ul>
+                        <% projects.forEach(project => { %>
+                            <li class="py-2">
+                                <a href="/admin/project/<%= project._id %>" class="text-primary hover:underline">
+                                    <%= project.name %>
+                                </a>
+                            </li>
+                        <% }); %>
+                    </ul>
+                <% } else { %>
+                    <div class="text-center text-gray-400">No projects available</div>
+                <% } %>
+            </div>
+            <div class="mt-4 flex justify-center">
+                <form action="/admin/project" method="POST">
+                    <button type="submit" class="btn btn-primary">Create Project</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

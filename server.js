@@ -1,57 +1,115 @@
-// server.js
+const express = require('express');
+const mongoose = require('mongoose');
+const bodyParser = require('body-parser');
+const passport = require('passport');
+const flash = require('connect-flash');
+const cors = require('cors');
+const os = require('os');
+const http = require('http');
+const session = require('express-session');
+const MongoStore = require('connect-mongo'); // Import connect-mongo for session store
+const methodOverride = require('method-override');
+const socketIo = require('socket.io');
+const port = process.env.PORT || 7777;
+require('dotenv').config();
 
-// set up ======================================================================
-// get all the tools we need
-var express  = require('express');
-var app      = express();
-var port     = process.env.PORT || 7777;
-const MongoClient = require('mongodb').MongoClient
-var mongoose = require('mongoose');
-var passport = require('passport');
-var flash    = require('connect-flash');
+// Function to get the local network IP
+const getLocalNetworkIP = () => {
+    const interfaces = os.networkInterfaces();
+    for (const name in interfaces) {
+        for (const iface of interfaces[name]) {
+            if (iface.family === 'IPv4' && !iface.internal) {
+                return iface.address; // Return the local network IP
+            }
+        }
+    }
+    return 'localhost'; // Fallback if no network IP found
+};
 
-var morgan       = require('morgan');
-var cookieParser = require('cookie-parser');
-var bodyParser   = require('body-parser');
-var session      = require('express-session');
+const localIP = getLocalNetworkIP();
+const localServerPort = process.env.LOCAL_SERVER_PORT || 5000;
 
-require('dotenv').config()
+// Initialize Express app
+const app = express();
 
-// var configDB = require('./config/database.js');
+// Configure CORS to allow the local server origin
+app.use(
+    cors({
+        origin: `http://${localIP}:${localServerPort}`, // Allow only the local server origin
+        methods: ['GET', 'POST', 'PUT', 'DELETE'], // Explicitly allow HTTP methods
+        credentials: true // Allow cookies and authorization headers
+    })
+);
 
-var db
+// Create HTTP server to attach to WebSocket
+const server = http.createServer(app);
+const io = socketIo(server); // Attach Socket.IO to the HTTP server
 
-// configuration ===============================================================
-mongoose.connect(process.env.MONGODB_URL, (err, database) => {
-  if (err) return console.log(err)
-  console.log("hello!", process.env.DB_NAME)
-  db = process.env.DB_NAME
-  require('./app/routes.js')(app, passport, db);
-}); // connect to our database
+// Make `io` available in the request object for routes
+app.use((req, res, next) => {
+    req.io = io;
+    next();
+});
 
-require('./config/passport')(passport); // pass passport for configuration
+// Database connection
+mongoose
+    .connect(process.env.MONGODB_URL, { useNewUrlParser: true, useUnifiedTopology: true })
+    .then(() => console.log('MongoDB connected'))
+    .catch((err) => console.error('MongoDB connection error:', err));
 
-// set up our express application
-app.use(morgan('dev')); // log every request to the console
-app.use(cookieParser()); // read cookies (needed for auth)
-app.use(bodyParser.json()); // get information from html forms
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static('public'))
+// Passport configuration
+require('./config/passport')(passport); // Load Passport configuration
+
+// Configure sessions with MongoDB session store
+app.use(
+    session({
+        secret: process.env.SESSION_SECRET, // Change to a secure value in production
+        resave: false, // Don't save session if unmodified
+        saveUninitialized: false, // Don't create session until something is stored
+        store: MongoStore.create({
+            client: mongoose.connection.getClient(), // Use the client directly
+            ttl: 14 * 24 * 60 * 60, // Session expiration in seconds (14 days)
+        }).on('connected', () => console.log('Connected to MongoDB for sessions')), // Log successful connection
+        cookie: {
+            secure: false, // Set to true if using HTTPS
+            httpOnly: true, // Prevent client-side JS access to the cookie
+        },
+    })
+);
 
 
-app.set('view engine', 'ejs'); // set up ejs for templating
 
-// required for passport
-app.use(session({
-    secret: 'rcbootcamp2021b', // session secret
-    resave: true,
-    saveUninitialized: true
-}));
 app.use(passport.initialize());
-app.use(passport.session()); // persistent login sessions
-app.use(flash()); // use connect-flash for flash messages stored in session
+app.use(passport.session());
+app.use(flash());
 
+// Middleware
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(methodOverride('_method'));
 
-// launch ======================================================================
-app.listen(port);
-console.log('The magic happens on port ' + port);
+// Set view engine (EJS for rendering pages)
+app.set('view engine', 'ejs');
+
+// Static files
+app.use(express.static('public'));
+
+// Import routes
+const adminRoutes = require('./app/routes/admin'); // Admin routes for dashboard, projects, and scenes
+const mainRoutes = require('./app/routes/main'); // Main routes for index, login, and signup
+
+// Routes
+app.use('/', mainRoutes);
+app.use('/admin', adminRoutes);
+
+// Handle WebSocket connections
+io.on('connection', (socket) => {
+    console.log('A user connected:', socket.id);
+
+    socket.on('disconnect', () => {
+        console.log('A user disconnected:', socket.id);
+    });
+});
+
+// Start the server
+server.listen(port, () => console.log(`Server running on port ${port}`));

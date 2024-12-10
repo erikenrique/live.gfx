@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preview - <%= scene.name %></title>
+    <link href="/css/output.css" rel="stylesheet">
+    <link href="/css/preview.css" rel="stylesheet">
+    <script src="/socket.io/socket.io.js"></script>
+    <script defer src="/preview.js"></script>
+</head>
+<body>
+    <div id="previewArea" class="relative w-full h-screen">
+        <% 
+        const visibleElements = elements.filter(element => 
+            element.state === 'on' || element.state === 'preview on'
+        ); 
+        %>
+        
+        <% if (visibleElements.length === 0) { %>
+            <!-- No visible elements, just render the background color -->
+        <% } else { %>
+            <% visibleElements.forEach((element) => { %>
+                <div
+                    class="absolute element element-<%= element.type %>"
+                    data-element-id="<%= element._id %>"
+                    style="
+                        top: <%= element.position.y %>px;
+                        left: <%= element.position.x %>px;
+                        transform: scale(<%= element.position.scale / 100 %>) rotate(<%= element.position.rotate %>deg);
+                        --theme-color: <%= element.theme?.color || '#FFFFFF' %>;
+                        --font-size: <%= element.theme?.fontSize || '16px' %>;
+                    "
+                >
+                    <% if (element.type === 'text') { %>
+                        <p class="element-text">
+                            <%= element.content %>
+                        </p>
+                    <% } else if (element.type === 'image') { %>
+                        <img src="<%= element.content %>" alt="Element Image" class="element-image" />
+                    <% } %>
+                </div>
+            <% }) %>
+        <% } %>
+    </div>
+    <script>
+        const publicBaseUrl = '<%= publicBaseUrl %>';
+        const apiEndpoint = `${publicBaseUrl}/admin/project/<%= scene.projectId %>/scene/<%= scene._id %>/elements`;
+        console.log('API Endpoint:', apiEndpoint);
+    </script>
+</body>
+</html>

@@ -1,103 +1,144 @@
 // config/passport.js
 
-// load all the things we need
-var LocalStrategy   = require('passport-local').Strategy;
+// Load all the strategies we need
+const LocalStrategy = require('passport-local').Strategy;
+const { Strategy: JwtStrategy, ExtractJwt } = require('passport-jwt');
 
-// load up the user model
-var User       		= require('../app/models/user');
+// Load the user model
+const User = require('../app/models/User');
 
-// expose this function to our app using module.exports
-module.exports = function(passport) {
+// Load environment variables
+require('dotenv').config();
 
-	// =========================================================================
-    // passport session setup ==================================================
+// Expose this function to our app using module.exports
+module.exports = function (passport) {
     // =========================================================================
-    // required for persistent login sessions
-    // passport needs ability to serialize and unserialize users out of session
+    // Passport session setup ==================================================
+    // =========================================================================
+    // Required for persistent login sessions
+    // Passport needs the ability to serialize and deserialize users out of session
 
-    // used to serialize the user for the session
-    passport.serializeUser(function(user, done) {
+    // Used to serialize the user for the session
+    passport.serializeUser((user, done) => {
         done(null, user.id);
     });
 
-    // used to deserialize the user
-    passport.deserializeUser(function(id, done) {
-        User.findById(id, function(err, user) {
-            done(err, user);
-        });
+    // Used to deserialize the user
+    passport.deserializeUser(async (id, done) => {
+        try {
+            const user = await User.findById(id);
+            done(null, user);
+        } catch (err) {
+            done(err, null);
+        }
     });
 
- 	// =========================================================================
+    // =========================================================================
     // LOCAL SIGNUP ============================================================
     // =========================================================================
-    // we are using named strategies since we have one for login and one for signup
-	// by default, if there was no name, it would just be called 'local'
+    // Using a named strategy for signup
+    passport.use(
+        'local-signup',
+        new LocalStrategy(
+            {
+                usernameField: 'email', // Override with email instead of username
+                passwordField: 'password',
+                passReqToCallback: true, // Pass the entire request back to the callback
+            },
+            async (req, email, password, done) => {
+                try {
+                    // Check if a user already exists with the same email
+                    const existingUser = await User.findOne({ email });
+                    if (existingUser) {
+                        return done(
+                            null,
+                            false,
+                            req.flash('signupMessage', 'That email is already taken.')
+                        );
+                    }
 
-    passport.use('local-signup', new LocalStrategy({
-        usernameField: 'email',
-        passwordField: 'password',
-        passReqToCallback: true // allows us to pass back the entire request to the callback
-    },
-    function(req, email, password, done) {
-        // find a user whose email is the same as the form's email
-        User.findOne({ 'local.email': email }, function(err, user) {
-            if (err) return done(err);
-    
-            // check to see if there's already a user with that email
-            if (user) {
-                return done(null, false, req.flash('signupMessage', 'That email is already taken.'));
-            } else {
-                // create a new user
-                const newUser = new User();
-    
-                // set the user's local credentials
-                newUser.local.username = req.body.username; 
-                newUser.local.email = email;
-                newUser.local.password = newUser.generateHash(password);
-    
-                // save the user
-                newUser.save(function(err) {
-                    if (err) throw err;
+                    // Create a new user
+                    const newUser = new User({
+                        username: req.body.username || email.split('@')[0], // Use username from form or default to email prefix
+                        email,
+                        password, // Password will be hashed by the model's pre-save middleware
+                    });
+
+                    await newUser.save();
                     return done(null, newUser);
-                });
+                } catch (err) {
+                    return done(err);
+                }
             }
-        });
-    }));
-    
+        )
+    );
 
     // =========================================================================
     // LOCAL LOGIN =============================================================
     // =========================================================================
-    // we are using named strategies since we have one for login and one for signup
-    // by default, if there was no name, it would just be called 'local'
+    // Using a named strategy for login
+    passport.use(
+        'local-login',
+        new LocalStrategy(
+            {
+                usernameField: 'email', // Override with email instead of username
+                passwordField: 'password',
+                passReqToCallback: true, // Pass the entire request back to the callback
+            },
+            async (req, email, password, done) => {
+                try {
+                    // Find the user by email
+                    const user = await User.findOne({ email });
+                    if (!user) {
+                        return done(
+                            null,
+                            false,
+                            req.flash('loginMessage', 'No user found.')
+                        );
+                    }
 
-    passport.use('local-login', new LocalStrategy({
-        // by default, local strategy uses username and password, we will override with email
-        usernameField : 'email',
-        passwordField : 'password',
-        passReqToCallback : true // allows us to pass back the entire request to the callback
-    },
-    function(req, email, password, done) { // callback with email and password from our form
+                    // Validate the password
+                    const isValidPassword = await user.comparePassword(password);
+                    if (!isValidPassword) {
+                        return done(
+                            null,
+                            false,
+                            req.flash('loginMessage', 'Oops! Wrong password.')
+                        );
+                    }
 
-        // find a user whose email is the same as the forms email
-        // we are checking to see if the user trying to login already exists
-        User.findOne({ 'local.email' :  email }, function(err, user) {
-            // if there are any errors, return the error before anything else
-            if (err)
-                return done(err);
+                    // All is well, return the user
+                    return done(null, user);
+                } catch (err) {
+                    return done(err);
+                }
+            }
+        )
+    );
 
-            // if no user is found, return the message
-            if (!user)
-                return done(null, false, req.flash('loginMessage', 'No user found.')); // req.flash is the way to set flashdata using connect-flash
-
-            // if the user is found but the password is wrong
-            if (!user.validPassword(password))
-                return done(null, false, req.flash('loginMessage', 'Oops! Wrong password.')); // create the loginMessage and save it to session as flashdata
-
-            // all is well, return successful user
-            return done(null, user);
-        });
-
-    }));
-
+    // =========================================================================
+    // JWT STRATEGY ============================================================
+    // =========================================================================
+    // Using the JWT strategy for API authentication
+    passport.use(
+        new JwtStrategy(
+            {
+                jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(), // Extract token from Authorization header
+                secretOrKey: process.env.JWT_SECRET, // JWT secret from .env
+            },
+            async (jwtPayload, done) => {
+                try {
+                    // Find the user specified in the token
+                    const user = await User.findById(jwtPayload.id);
+                    if (user) {
+                        return done(null, user);
+                    } else {
+                        return done(null, false); // No user found
+                    }
+                } catch (err) {
+                    return done(err, false);
+                }
+            }
+        )
+    );
 };

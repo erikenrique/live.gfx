@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control Room - <%= scene.name %></title>
+    <link href="/css/output.css" rel="stylesheet">
+    <link href="/css/controlRoom.css" rel="stylesheet">
+    <script src="/socket.io/socket.io.js"></script>
+    <script defer src="/controlRoom.js"></script>
+</head>
+
+<body class="bg-gray-900 text-white" 
+    data-public-base-url="<%= publicBaseUrl %>"
+    data-local-base-url="<%= localBaseUrl %>" 
+    data-project-id="<%= projectId %>" 
+    data-scene-id="<%= scene._id %>">
+    
+    <div class="flex h-screen">
+        <!-- Control Panel (Left Side) -->
+        <div class="control-panel flex-auto w-1/2 h-full flex flex-col">
+            <!-- Navigation Bar -->
+            <nav class="control-room-nav flex items-center justify-between px-4 py-2 bg-gray-700">
+                <div class="logo font-bold text-lg text-white">Logo</div>
+                <div class="nav-links flex space-x-4">
+                    <a href="#" class="nav-link active">Layers</a>
+                    <a href="#" class="nav-link">Theme</a>
+                    <a href="#" class="nav-link">Media</a>
+                    <a href="#" class="nav-link">Score</a>
+                </div>
+            </nav>
+
+            <!-- Section 1: Header -->
+            <header class="flex justify-between items-center h-10 px-4 bg-gray-800 border-b border-gray-700">
+                <h1 class="text-lg font-semibold text-white">
+                    <%= scene.name %>
+                </h1>
+                <div class="panel-actions flex space-x-4">
+                    <% if (elements.some(el => el.state === 'preview on' || el.state === 'preview off')) { %>
+                        <button id="runBtn"
+                            class="rounded bg-green-600 hover:bg-green-500 text-white px-4 py-2 text-sm font-medium">
+                            Run
+                        </button>
+                    <% } %>
+                    <button id="addElementBtn"
+                        class="rounded bg-gradient-to-r from-purple-500 to-pink-500 hover:from-pink-500 hover:to-purple-500 text-white px-4 py-2 text-sm font-medium">
+                        + Add
+                    </button>
+                    <button id="toggleEditBtn"
+                        class="rounded bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 text-sm font-medium">
+                        <%= isEditing ? 'Lock' : 'Edit' %>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Section 2: Elements List -->
+            <main class="flex flex-1 flex-col overflow-y-auto px-4 py-2">
+                <% if (elements.length === 0) { %>
+                    <p class="text-center text-gray-400 mt-4">
+                        No elements added yet. Use the + Add button to create one.
+                    </p>
+                <% } else { %>
+                    <div class="elements-list space-y-2">
+                        <% elements.forEach(element => { %>
+                            <div class="element-item flex justify-between items-center rounded pr-2 w-full space-x-4">
+                                <!-- Cue Button -->
+                                <button
+                                    class="cue-btn w-8 px-4 y-2 h-full rounded transition <%= element.state === 'preview on' ? 'preview-on' : element.state === 'on' ? 'on' : element.state === 'preview off' ? 'preview-off' : '' %>"
+                                    data-element-id="<%= element._id %>">
+                                </button>
+                        
+                                <!-- Toggle Button -->
+                                <button
+                                    class="toggle-btn flex items-center px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded flex-grow h-14"
+                                    data-element-id="<%= element._id %>">
+                                    <span class="icon mr-2">
+                                        <%= element.type === 'Image' ? '🖼️' : 
+                                             element.type === 'Lower Third' ? '📺' : 
+                                             element.type === 'Message' ? '✉️' : '📜' %>
+                                    </span>
+                                    <div class="text-wrapper">
+                                        <div class="text-xxs text-gray-400"><%= element.type %></div>
+                                        <div class="font-semibold"><%= element.content || 'No content set' %></div>
+                                    </div>
+                                </button>
+                            
+                                <!-- Editing Controls -->
+                                <div class="editable-controls hidden py-2 space-x-2 h-14 items-center justify-between">
+                                    <!-- Z-index up -->
+                                    <button
+                                        class="z-up-btn w-10 h-10 bg-gray-700 hover:bg-gray-600 text-white rounded flex-shrink-0"
+                                        data-element-id="<%= element._id %>">↑</button>
+                                    <!-- Z-index down -->
+                                    <button
+                                        class="z-down-btn w-10 h-10 bg-gray-700 hover:bg-gray-600 text-white rounded flex-shrink-0"
+                                        data-element-id="<%= element._id %>">↓</button>
+                                    <!-- Edit Button -->
+                                    <button
+                                        class="edit-panel-btn w-10 h-10 bg-blue-600 hover:bg-blue-500 text-white rounded flex-shrink-0"
+                                        data-element-id="<%= element._id %>">✏️</button>
+                                    <!-- Delete Button -->
+                                    <button
+                                        class="delete-btn w-10 h-10 bg-red-600 hover:bg-red-500 text-white rounded flex-shrink-0"
+                                        data-element-id="<%= element._id %>">🗑️</button>
+                                </div>
+                            </div>
+                            
+                        <% }); %>
+                    </div>
+                <% } %>
+            </main>
+        </div>
+
+        <!-- Preview Window (Right Side) -->
+        <div class="flex-auto w-1/2 bg-green-500">
+            <iframe src="/preview/<%= scene._id %>" class="w-full h-full"></iframe>
+        </div>
+    </div>
+
+    <!-- Add Element Side Panel -->
+    <div id="addElementPanel" class="side-panel">
+        <header class="flex items-center justify-between px-4 py-3 bg-gray-900 border-b border-gray-700">
+            <h2 class="text-lg font-semibold">Add Element</h2>
+        </header>
+        <main class="px-4 py-2 overflow-auto">
+            <ul>
+                <li><button class="btn bg-gray-700 w-full mb-2">Image</button></li>
+                <li><button class="btn bg-gray-700 w-full mb-2">Lower Third</button></li>
+                <li><button class="btn bg-gray-700 w-full mb-2">Message</button></li>
+                <li><button class="btn bg-gray-700 w-full mb-2">Ticker</button></li>
+                <li><button class="btn bg-gray-700 w-full">Scoreboard</button></li>
+            </ul>
+        </main>
+        <footer class="px-4 py-2">
+            <button id="closeAddPanelBtn" class="btn bg-red-700 w-full">Close</button>
+        </footer>
+    </div>
+
+    <!-- Edit Element Side Panel -->
+    <div id="editElementPanel" class="side-panel">
+        <header class="flex items-center justify-between px-4 py-3 bg-gray-900 border-b border-gray-700">
+            <h2 class="text-lg font-semibold">Edit Element</h2>
+        </header>
+        <main class="px-4 py-2 overflow-auto">
+            <form id="editElementForm">
+                <div class="mb-4">
+                    <label for="elementContent" class="block text-sm font-medium text-gray-400">Content</label>
+                    <input type="text" id="elementContent"
+                        class="form-input w-full bg-gray-800 border border-gray-700 text-white rounded focus:ring focus:ring-blue-500 focus:outline-none" />
+                </div>
+                <div class="mb-4">
+                    <label for="elementPosition" class="block text-sm font-medium text-gray-400">Position</label>
+                    <input type="text" id="elementPosition"
+                        class="form-input w-full bg-gray-800 border border-gray-700 text-white rounded focus:ring focus:ring-blue-500 focus:outline-none" />
+                </div>
+                <button type="submit"
+                    class="btn bg-blue-700 hover:bg-blue-600 text-white font-medium rounded-lg w-full py-2">
+                    Save
+                </button>
+            </form>
+        </main>
+        <footer class="px-4 py-2">
+            <button id="closeEditPanelBtn"
+                class="btn bg-red-700 hover:bg-red-600 text-white font-medium rounded-lg w-full py-2">
+                Close
+            </button>
+        </footer>
+    </div>
+
+    <script>
+        const adminBaseUrl = '<%= publicBaseUrl %>';
+        const localBaseUrl = '<%= localBaseUrl %>';
+        console.log('Admin Base URL:', adminBaseUrl);
+        console.log('Local Base URL:', localBaseUrl);
+    </script>
+</body>
+
+</html>
