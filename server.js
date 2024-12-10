@@ -42,17 +42,9 @@ const allowedOrigins = [
 // Configure CORS to allow the local server origin
 app.use(
     cors({
-        origin: function (origin, callback) {
-            // Allow requests with no origin (e.g., mobile apps or curl requests)
-            if (!origin) return callback(null, true);
-            if (allowedOrigins.includes(origin)) {
-                return callback(null, true);
-            } else {
-                return callback(new Error('Not allowed by CORS'));
-            }
-        },
-        methods: ['GET', 'POST', 'PUT', 'DELETE'], // Explicitly allow these HTTP methods
-        credentials: true, // Allow cookies and authorization headers
+        origin: `http://${localIP}:${localServerPort}`, // Allow only the local server origin
+        methods: ['GET', 'POST', 'PUT', 'DELETE'], // Explicitly allow HTTP methods
+        credentials: true // Allow cookies and authorization headers
     })
 );
 

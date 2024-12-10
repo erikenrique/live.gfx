@@ -13,12 +13,12 @@ exports.login = (req, res, next) => {
             req.flash('loginMessage', 'Invalid email or password.');
             return res.redirect('/login');
         }
-        req.login(user, (err) => {
+        req.logIn(user, (err) => {
             if (err) return next(err);
 
-            // if JWT is ideal... for websocket use
-            const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-            res.cookie('jwt', token, { httpOnly: true });
+            // // if JWT is ideal... for websocket use
+            // const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+            // res.cookie('jwt', token, { httpOnly: true });
 
             res.redirect('/admin/dashboard');
         });
