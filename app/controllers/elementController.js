@@ -13,7 +13,7 @@ exports.createElement = async (req, res) => {
             return res.status(404).json({ error: 'Scene not found' });
         }
 
-        // Calculate the next order number (number of elements + 1)
+        // calculate the next order number (number of elements + 1)
         const nextOrder = scene.elements.length + 1;
 
         const newElement = new Element({
