@@ -13,6 +13,9 @@ const socketIo = require('socket.io');
 const port = process.env.PORT || 7777;
 require('dotenv').config();
 
+const publicBaseUrl = process.env.PUBLIC_BASE_URL || `http://localhost:${process.env.PORT}`; // Default for local testing
+app.set('publicBaseUrl', publicBaseUrl); // Attach to the app for reuse
+
 // Function to get the local network IP
 const getLocalNetworkIP = () => {
     const interfaces = os.networkInterfaces();
