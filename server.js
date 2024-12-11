@@ -33,15 +33,16 @@ const localServerPort = process.env.LOCAL_SERVER_PORT || 5000;
 const app = express();
 
 const allowedOrigins = [
-    `https://live-gfx.onrender.com`,
+    process.env.PUBLIC_BASE_URL,
+    'https://live-gfx.onrender.com',
     `http://${localIP}:${localServerPort}`,
-    'http://localhost:5000',
+    'http://localhost:5000'
 ];
 
 // Configure CORS to allow the local server origin
 app.use(
     cors({
-        origin: function (origin, callback) {
+        origin: (origin, callback) => {
             console.log(`CORS request from origin: ${origin}`);
 
             if (!origin || allowedOrigins.includes(origin)) {

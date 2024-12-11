@@ -7,7 +7,9 @@
     <link href="/css/output.css" rel="stylesheet">
     <script defer src="/main.js"></script>
 </head>
-<body class="bg-maroon-900 text-white">
+<body class="bg-maroon-900 text-white"
+    data-public-base-url="<%= publicBaseUrl %>"
+    data-local-base-url="<%= localBaseUrl %>" >
     <% include partials/header %>
 
     <div class="container mx-auto p-6">
@@ -31,8 +33,9 @@
                 <div class="flex justify-between items-center">
                     <span>Control Room</span>
                     <a
-                        href="http://10.0.0.165:5000/control/<%= scene._id %>"
+                        href="<%= localBaseUrl %>/control/<%= scene._id %>"
                         class="btn btn-outline"
+                        target="_blank"
                     >
                         Open
                     </a>
@@ -40,8 +43,9 @@
                 <div class="flex justify-between items-center">
                     <span>Preview</span>
                     <a
-                        href="http://10.0.0.165:5000/preview/<%= scene._id %>"
+                        href="<%= localBaseUrl %>:5000/preview/<%= scene._id %>"
                         class="btn btn-outline"
+                        target="_blank"
                     >
                         Open
                     </a>
@@ -49,8 +53,9 @@
                 <div class="flex justify-between items-center">
                     <span>Output</span>
                     <a
-                        href="http://10.0.0.165:5000/output/<%= scene._id %>"
+                        href="<%= localBaseUrl %>:5000/output/<%= scene._id %>"
                         class="btn btn-outline"
+                        target="_blank"
                     >
                         Open
                     </a>
@@ -59,5 +64,11 @@
         </div>
     </div>
 
+    <script>
+        const adminBaseUrl = '<%= publicBaseUrl %>';
+        const localBaseUrl = '<%= localBaseUrl %>';
+        console.log('Admin Base URL:', adminBaseUrl);
+        console.log('Local Base URL:', localBaseUrl);
+    </script>
 </body>
 </html>
