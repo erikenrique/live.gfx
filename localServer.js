@@ -8,7 +8,9 @@ const os = require('os');
 const session = require('express-session');
 const MongoStore = require('connect-mongo'); // Import connect-mongo for session store
 const passport = require('passport'); // Import Passport
-// const { ensureAuthenticated } = require('./app/controllers/authController'); // Ensure Authentication Middleware
+const port = 5000;
+// const { ensureAuthenticated } = require('./app/controllers/authController'); // bring back on public launch / wanting to not bypassAuth
+
 require('./config/passport')(passport); // Passport configuration
 require('dotenv').config();
 
@@ -18,7 +20,6 @@ app.set('publicBaseUrl', publicBaseUrl); // Attach to the app for reuse
 const Scene = require('./app/models/Scene');
 const Element = require('./app/models/Element');
 
-const port = 5000;
 
 // Function to get the local network IP
 const getLocalNetworkIp = () => {

@@ -10,7 +10,7 @@ exports.renderScene = async (req, res) => {
         }
 
         const publicBaseUrl = req.app.get('publicBaseUrl'); // Retrieve from app settings
-        const localBaseUrl = `http://${req.hostname}:${process.env.LOCAL_SERVER_PORT || 5000}`;
+        const localBaseUrl = `http://localhost:${process.env.LOCAL_SERVER_PORT || 5000}`;
 
         const project = await Project.findById(req.params.projectId);
         if (!project || project.userId.toString() !== req.user._id.toString()) {
