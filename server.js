@@ -36,7 +36,9 @@ const allowedOrigins = [
     process.env.PUBLIC_BASE_URL,
     'https://live-gfx.onrender.com',
     `http://${localIP}:${localServerPort}`,
-    'http://localhost:5000'
+    'http://localhost:5000',
+    'http://localhost:7777',
+
 ];
 
 // Configure CORS to allow the local server origin
