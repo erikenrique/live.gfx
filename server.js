@@ -1,4 +1,6 @@
 const express = require('express');
+const app = express();
+
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const passport = require('passport');
@@ -10,12 +12,9 @@ const session = require('express-session');
 const MongoStore = require('connect-mongo'); // Import connect-mongo for session store
 const methodOverride = require('method-override');
 const socketIo = require('socket.io');
-const port = process.env.PORT || 7777;
 require('dotenv').config();
 
-const publicBaseUrl = process.env.PUBLIC_BASE_URL || `http://localhost:${process.env.PORT}`; // Default for local testing
-app.set('publicBaseUrl', publicBaseUrl); // Attach to the app for reuse
-
+const port = process.env.PORT || 7777;
 // Function to get the local network IP
 const getLocalNetworkIP = () => {
     const interfaces = os.networkInterfaces();
@@ -31,9 +30,8 @@ const getLocalNetworkIP = () => {
 
 const localIP = getLocalNetworkIP();
 const localServerPort = process.env.LOCAL_SERVER_PORT || 5000;
-
-// Initialize Express app
-const app = express();
+const publicBaseUrl = process.env.PUBLIC_BASE_URL || `http://localhost:${process.env.PORT}`; // Default for local testing
+app.set('publicBaseUrl', publicBaseUrl); 
 
 const allowedOrigins = [
     process.env.PUBLIC_BASE_URL,
@@ -41,6 +39,7 @@ const allowedOrigins = [
     `http://${localIP}:${localServerPort}`,
     'http://localhost:5000',
     'http://localhost:7777',
+    
 
 ];
 

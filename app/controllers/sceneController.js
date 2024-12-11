@@ -9,12 +9,20 @@ exports.renderScene = async (req, res) => {
             return res.status(404).json({ error: 'Scene not found' });
         }
 
+        const publicBaseUrl = req.app.get('publicBaseUrl'); // Retrieve from app settings
+        const localBaseUrl = `http://${req.hostname}:${process.env.LOCAL_SERVER_PORT || 5000}`;
+
         const project = await Project.findById(req.params.projectId);
         if (!project || project.userId.toString() !== req.user._id.toString()) {
             return res.status(403).json({ error: 'Unauthorized' });
         }
 
-        res.render('scene', { scene, project });
+        res.render('scene', {
+            scene,
+            project,
+            publicBaseUrl,
+            localBaseUrl,
+        });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Failed to load scene' });

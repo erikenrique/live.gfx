@@ -1,4 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
+    const adminBaseUrl = document.querySelector('body').dataset.publicBaseUrl;
+    const localBaseUrl = document.querySelector('body').dataset.localBaseUrl;
+
+    console.log('Admin Base URL:', adminBaseUrl);
+    console.log('Local Base URL:', localBaseUrl);
+    
     const projectTitle = document.querySelector('#projectTitle');
     const sceneName = document.querySelector('#sceneName');
 
